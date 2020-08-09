@@ -8,14 +8,24 @@
 //                                                                        // 
 ////////////////////////////////////////////////////////////////////////////
 
+#include "Adafruit_FONA.h" // https://github.com/botletics/SIM7000-LTE-Shield/tree/master/Code
+#define SIMCOM_7000 // SIM7000A/C/E/G
+
+// For SIM7000 shield with ESP32
+#define FONA_PWRKEY 18
+#define FONA_RST 5
+#define FONA_TX 16 // ESP32 hardware serial RX2 (GPIO16)
+#define FONA_RX 17 // ESP32 hardware serial TX2 (GPIO17)
+
+
 #define GSM_MODULE
 //#define SLIC_TEST
 
-#if defined(GSM_MODULE)
+/*#if defined(GSM_MODULE)
 #include "SIM900.h"
 #include <SoftwareSerial.h>
 #include "call.h"
-#endif
+#endif /*
 
 // states of state machine 
 #define IDLE_WAIT 1
@@ -84,9 +94,9 @@ CallGSM call;
 void setup() {
   pinMode(shkPin, INPUT);
   pinMode(hzPin, OUTPUT);
-  pinMode(rcPin, OUTPUT);
-  pinMode(rflPin, OUTPUT);
-  digitalWrite(rflPin, 0);
+  pinMode(rmPin, OUTPUT);
+  //pinMode(rflPin, OUTPUT);
+  digitalWrite(rmPin, 0);
   #if defined(SLIC_TEST)
   pinMode(ringTestPin, INPUT_PULLUP);
   #endif
