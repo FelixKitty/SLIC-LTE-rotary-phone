@@ -4,7 +4,7 @@
 //                                                                        //
 //  By Johan Berglund, November 2016                                      //
 //                                                                        //
-//  For Arduino, QCX601 SLIC board and SIM900 or SIM800 breakout board    //
+//  For Arduino, KS0835F SLIC board and LILYGO-T-CALL-SIM7000 board    //
 //                                                                        // 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -24,10 +24,10 @@
 #define GETTING_NUMBER 4
 
 
-#define rflPin 6        // RFL pin to QCX601 pin J1-1, reverse signal (LOW)
-#define hzPin 7         // 25Hz pin to QCX601 pin J1-2 (25Hz signal for ringing) _-_-_-_-_
-#define rcPin 8         // RC pin to QCX601 pin J1-3, ring control, HIGH when ringing --___--___--___
-#define shkPin 9        // switch hook pin from QCX601 pin J1-4
+//#define rflPin 6        // RFL pin to QCX601 pin J1-1, reverse signal (LOW)
+#define hzPin 7         // 25Hz pin to KS0835F pin 3 (25Hz signal for ringing) _-_-_-_-_
+#define rmPin 8         // RM pin to KS0835F pin 4 ring control, HIGH when ringing --___--___--___
+#define shkPin 9        // switch hook pin from KS0835F pin J1-4
 
                         // Change the pins above as is suits your project
                         // For connection to GSM board, pin 2 goes to TX and pin 3 to RX
@@ -134,7 +134,7 @@ void loop() {
   if ((unsigned long)(currentMillis - statusPreviousMillis) >= statusCheckInterval) {
     // Time to check status of GSM board
     #if defined(GSM_MODULE)
-    if (!digitalRead(rcPin) && (state != GETTING_NUMBER)) { // or software serial will interfere with ringing and dialing
+    if (!digitalRead(rmPin) && (state != GETTING_NUMBER)) { // or software serial will interfere with ringing and dialing
       gsmStatus = call.CallStatus();
     }
     #endif
@@ -183,25 +183,25 @@ void loop() {
     // Ringing interval 
     // How much time has passed, accounting for rollover with subtraction!
     if ((unsigned long)(currentMillis - ringPreviousMillis) >= ringInterval) {
-      digitalWrite (rcPin,1); // Ring
+      digitalWrite (rmPin,1); // Ring
       // Use the snapshot to set track time until next event
       ringPreviousMillis = currentMillis;
     }
-    if (digitalRead(rcPin) && ((unsigned long)(currentMillis - ringPreviousMillis) >= ringDuration)) {
-        digitalWrite(rcPin, 0); // Silent after ring duration
+    if (digitalRead(rmPin) && ((unsigned long)(currentMillis - ringPreviousMillis) >= ringDuration)) {
+        digitalWrite(rmPin, 0); // Silent after ring duration
     }
     // 25Hz oscillation      
     // How much time has passed, accounting for rollover with subtraction!
     if ((unsigned long)(currentMillis - oscPreviousMillis) >= oscInterval) {
       // It's time to do something!
-      if (digitalRead(rcPin)) {
+      if (digitalRead(rmPin)) {
         digitalWrite(hzPin, !digitalRead(hzPin)); // Toggle the 25Hz pin
       }    
       // Use the snapshot to set track time until next event
       oscPreviousMillis = currentMillis;
     }
     if (shkState == HIGH) {
-      digitalWrite(rcPin, 0); // stop ringing
+      digitalWrite(rmPin, 0); // stop ringing
       digitalWrite(hzPin, 0);
       // tell GSM board to pick up
       Serial.println("Picking up. Call initiated.");
@@ -212,7 +212,7 @@ void loop() {
     }
     #if defined(GSM_MODULE)
     if (gsmStatus != CALL_INCOM_VOICE) {
-      digitalWrite(rcPin, 0); // stop ringing
+      digitalWrite(rmPin, 0); // stop ringing
       digitalWrite(hzPin, 0);
       Serial.println("Caller gave up. Going back to idle.");
       state = IDLE_WAIT;
@@ -220,7 +220,7 @@ void loop() {
     #endif
     #if defined(SLIC_TEST)
     if (!ringTest) {
-      digitalWrite(rcPin, 0); // stop ringing
+      digitalWrite(rmPin, 0); // stop ringing
       digitalWrite(hzPin, 0);
       Serial.println("Caller gave up. Going back to idle.");
       state = IDLE_WAIT;
